@@ -1,0 +1,16 @@
+# Rocket Service API
+
+## Start the application
+Run the application with the following command:
+### Using default port (8080) and Production mode
+```.\rocketservice.exe```.
+
+### Using custom port
+```.\rocketservice.exe port 9090```.
+
+### Using custom port and debug mode
+```.\rocketservice.exe port 9090 debug```.
+
+## OpenAPI / Swagger
+Assuming the application runs on default port `8080`:
+http://localhost:8080/swagger/index.html
