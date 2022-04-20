@@ -1,6 +1,7 @@
 package main
 
 import (
+	"RocketService/controllers"
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/swag/example/basic/docs"
 	"log"
-	"net/http"
 )
 
 func main() {
@@ -35,23 +35,9 @@ func main() {
 	}
 
 	r := gin.Default()
+	c := controllers.NewController()
 
-	//c := controllers.NewController()
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-
-	/*
-		r.GET("/counter/increment", c.Increment)
-		r.GET("/counter/decrement", c.Decrement)
-		r.GET("/counter/atomicincrement", c.AtomicIncrement)
-		r.GET("/counter/atomicdecrement", c.AtomicDecrement)
-		r.GET("/counter/currentnumber", c.CurrentNumber)
-		r.GET("/counter/reset", c.Reset)
-	*/
+	r.POST("messages", c.ReceiveMessage)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	log.Fatal(r.Run(fmt.Sprintf(":%d", serverPort)))
