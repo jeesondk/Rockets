@@ -2,7 +2,7 @@ package tests
 
 import (
 	"RocketService/controllers"
-	DTO "RocketService/dto"
+	"RocketService/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
