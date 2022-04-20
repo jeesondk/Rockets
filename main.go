@@ -15,7 +15,7 @@ func main() {
 	var serverPort int
 	var debugMode bool
 
-	flag.IntVar(&serverPort, "port", 8080, "Specify RocketService port, Default is 8080")
+	flag.IntVar(&serverPort, "port", 8088, "Specify RocketService port, Default is 8080")
 	flag.BoolVar(&debugMode, "debug", false, "Specify if Gin is running in \"debug\" or \"release\"(false) mode, Default is \"release\"(false)")
 
 	flag.Parse()

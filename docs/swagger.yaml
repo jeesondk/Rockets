@@ -11,7 +11,11 @@ paths:
           description: OK
           schema:
             type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
       summary: Receive Rocket status messages
       tags:
-      - Message Service
+      - MessageService
 swagger: "2.0"

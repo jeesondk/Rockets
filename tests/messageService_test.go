@@ -15,7 +15,7 @@ import (
 func TestCanHandleLaunchMsg(t *testing.T) {
 	message := make(map[string]interface{})
 	message["type"] = "Falcon-9"
-	message["launchSpeed"] = 500
+	message["launchSpeed"] = 500.00
 	message["mission"] = "ARTEMIS"
 
 	expected := DTO.RocketLaunched{
@@ -35,12 +35,12 @@ func TestCanHandleLaunchMsg(t *testing.T) {
 func TestCanHandleLaunchNegSpeedMsg(t *testing.T) {
 	message := make(map[string]interface{})
 	message["type"] = "Falcon-9"
-	message["launchSpeed"] = -500
+	message["launchSpeed"] = -500.00
 	message["mission"] = "ARTEMIS"
 
 	expected := DTO.RocketLaunched{
 		Type:        "Falcon-9",
-		LaunchSpeed: 500,
+		LaunchSpeed: 500.00,
 		Mission:     "ARTEMIS",
 	}
 
@@ -55,7 +55,7 @@ func TestCanHandleLaunchNegSpeedMsg(t *testing.T) {
 func TestFailHandleLaunchMsgTypeErr(t *testing.T) {
 	message := make(map[string]interface{})
 	message["type"] = 99
-	message["launchSpeed"] = 500
+	message["launchSpeed"] = 500.00
 	message["mission"] = "ARTEMIS"
 
 	expected := DTO.RocketLaunched{
@@ -74,12 +74,12 @@ func TestFailHandleLaunchMsgTypeErr(t *testing.T) {
 func TestFailHandleLaunchMsgMissionErr(t *testing.T) {
 	message := make(map[string]interface{})
 	message["type"] = "Falcon-9"
-	message["launchSpeed"] = 500
+	message["launchSpeed"] = 500.00
 	message["mission"] = 42
 
 	expected := DTO.RocketLaunched{
 		Type:        "Falcon-9",
-		LaunchSpeed: 500,
+		LaunchSpeed: 500.00,
 	}
 
 	h := services.NewMessageService()
@@ -266,8 +266,8 @@ func TestMessageHandleMessages(t *testing.T) {
 		ID:   "rocket_id",
 		Type: "Falcon 9",
 		Speed: entities.RocketSpeed{
-			Current: 500,
-			Max:     500,
+			Current: 500.00,
+			Max:     500.00,
 		},
 		Mission:    "ARTEMIS",
 		LaunchDate: ts,
@@ -290,8 +290,8 @@ func TestMessageHandleMessages(t *testing.T) {
 		ID:   "rocket_id",
 		Type: "Falcon 9",
 		Speed: entities.RocketSpeed{
-			Current: 3000,
-			Max:     3000,
+			Current: 3000.00,
+			Max:     3000.00,
 		},
 		Mission:    "ARTEMIS",
 		LaunchDate: ts,
@@ -305,8 +305,8 @@ func TestMessageHandleMessages(t *testing.T) {
 		ID:   "rocket_id",
 		Type: "Falcon 9",
 		Speed: entities.RocketSpeed{
-			Current: 0,
-			Max:     500,
+			Current: 0.00,
+			Max:     500.00,
 		},
 		Mission:    "ARTEMIS",
 		LaunchDate: ts,
@@ -320,8 +320,8 @@ func TestMessageHandleMessages(t *testing.T) {
 		ID:   "rocket_id",
 		Type: "Falcon 9",
 		Speed: entities.RocketSpeed{
-			Current: 500,
-			Max:     500,
+			Current: 500.00,
+			Max:     500.00,
 		},
 		Mission:    "SHUTTLE_MIR",
 		LaunchDate: ts,
@@ -335,8 +335,8 @@ func TestMessageHandleMessages(t *testing.T) {
 		ID:   "rocket_id",
 		Type: "Falcon 9",
 		Speed: entities.RocketSpeed{
-			Current: 500,
-			Max:     500,
+			Current: 500.00,
+			Max:     500.00,
 		},
 		Mission:    "ARTEMIS",
 		LaunchDate: ts,
@@ -360,15 +360,15 @@ func TestMessageHandleMessages(t *testing.T) {
 			},
 			map[string]interface{}{
 				"type":        "Falcon-9",
-				"launchSpeed": 500,
+				"launchSpeed": 500.00,
 				"mission":     "ARTEMIS",
 			},
 			entities.Rocket{
 				ID:   "rocket_id",
 				Type: "Falcon 9",
 				Speed: entities.RocketSpeed{
-					Current: 500,
-					Max:     500,
+					Current: 500.00,
+					Max:     500.00,
 				},
 				Mission:    "ARTEMIS",
 				LaunchDate: ts,
@@ -386,14 +386,14 @@ func TestMessageHandleMessages(t *testing.T) {
 				MessageTime:   time.Now().String(),
 			},
 			map[string]interface{}{
-				"by": 2500,
+				"by": 2500.00,
 			},
 			entities.Rocket{
 				ID:   "rocket_id",
 				Type: "Falcon 9",
 				Speed: entities.RocketSpeed{
-					Current: 3000,
-					Max:     3000,
+					Current: 3000.00,
+					Max:     3000.00,
 				},
 				Mission:    "ARTEMIS",
 				LaunchDate: ts,
@@ -411,14 +411,14 @@ func TestMessageHandleMessages(t *testing.T) {
 				MessageTime:   ts,
 			},
 			map[string]interface{}{
-				"by": 500,
+				"by": 500.00,
 			},
 			entities.Rocket{
 				ID:   "rocket_id",
 				Type: "Falcon 9",
 				Speed: entities.RocketSpeed{
-					Current: 0,
-					Max:     500,
+					Current: 0.00,
+					Max:     500.00,
 				},
 				Mission:    "ARTEMIS",
 				LaunchDate: ts,

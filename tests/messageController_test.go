@@ -22,7 +22,7 @@ func TestCanHandleJsonRequest(t *testing.T) {
 					},
 					"message": {                                                    
 						"type": "Falcon-9",
-						"launchSpeed": 500,
+						"launchSpeed": 500.00,
 						"mission": "ARTEMIS"  
 					}
 				}`
@@ -30,7 +30,7 @@ func TestCanHandleJsonRequest(t *testing.T) {
 	messageServiceMock := messageServiceMock{}
 	messageServiceMock.On("HandleMessage", mock.Anything).Return(DTO.RocketLaunched{
 		Type:        "Falcon-9",
-		LaunchSpeed: 500,
+		LaunchSpeed: 500.00,
 		Mission:     "ARTEMIS",
 	}, nil)
 
@@ -54,7 +54,7 @@ func TestCanHandleInvalidRequest(t *testing.T) {
 						},
 						"message": {                                                    
 							"type": "Falcon-9",
-							"launchSpeed": 500,
+							"launchSpeed": 500.00,
 							"mission": "ARTEMIS"  
 						}
 					}`

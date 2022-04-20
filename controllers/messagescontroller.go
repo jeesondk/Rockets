@@ -9,9 +9,10 @@ import (
 // ReceiveMessage godoc
 // @Summary      Receive Rocket status messages
 // @Description  returns string
-// @Tags         Message Service
+// @Tags         MessageService
 // @Produce      plain
 // @Success      200  {object}  string
+// @Failure      422  {object}  string
 // @Router       /messages [post]
 func (c *Controller) ReceiveMessage(ctx *gin.Context) {
 	var request DTO.RequestMessage
@@ -22,5 +23,11 @@ func (c *Controller) ReceiveMessage(ctx *gin.Context) {
 		return
 	}
 
+	_, err := c.MessageService.HandleMessage(request.Metadata, request.Message)
+
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, err.Error())
+		return
+	}
 	ctx.JSON(http.StatusOK, "")
 }

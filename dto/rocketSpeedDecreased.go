@@ -1,5 +1,5 @@
 package DTO
 
 type RocketSpeedDecreased struct {
-	By int `json:"by"`
+	By float64 `json:"by"`
 }

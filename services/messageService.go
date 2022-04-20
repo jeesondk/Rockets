@@ -30,7 +30,7 @@ func (m *MessageService) HandleLaunchMessage(data interface{}) (DTO.RocketLaunch
 		errMsg += "Unable to parse mission. "
 	}
 
-	if speed, ok := d["launchSpeed"].(int); ok {
+	if speed, ok := d["launchSpeed"].(float64); ok {
 		if speed < 0 {
 			speed = speed * -1
 		}
@@ -54,7 +54,7 @@ func (m *MessageService) HandleSpeedIncreaseMessage(data interface{}) (DTO.Rocke
 	msg := DTO.RocketSpeedIncreased{}
 	errMsg := ""
 
-	if speed, ok := d["by"].(int); ok {
+	if speed, ok := d["by"].(float64); ok {
 		if speed < 0 {
 			speed = speed * -1
 		}
@@ -77,7 +77,7 @@ func (m *MessageService) HandleSpeedDecreaseMessage(data interface{}) (DTO.Rocke
 	msg := DTO.RocketSpeedDecreased{}
 	errMsg := ""
 
-	if speed, ok := d["by"].(int); ok {
+	if speed, ok := d["by"].(float64); ok {
 		if speed < 0 {
 			speed = speed * -1
 		}

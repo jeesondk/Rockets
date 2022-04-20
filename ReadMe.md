@@ -2,7 +2,7 @@
 
 ## Start the application
 Run the application with the following command:
-### Using default port (8080) and Production mode
+### Using default port (8088) and Production mode
 ```.\rocketservice.exe```.
 
 ### Using custom port

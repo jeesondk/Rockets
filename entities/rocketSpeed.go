@@ -1,11 +1,11 @@
 package entities
 
 type RocketSpeed struct {
-	Current int
-	Max     int
+	Current float64
+	Max     float64
 }
 
-func (r *RocketSpeed) Update(delta int) {
+func (r *RocketSpeed) Update(delta float64) {
 	r.Current += delta
 
 	if r.Current > r.Max {

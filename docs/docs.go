@@ -23,12 +23,18 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "Message Service"
+                    "MessageService"
                 ],
                 "summary": "Receive Rocket status messages",
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
                             "type": "string"
                         }
