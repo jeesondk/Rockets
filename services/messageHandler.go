@@ -41,7 +41,23 @@ func (m *MessageHandler) HandleLaunchMessage(data interface{}) (DTO.RocketLaunch
 }
 
 func (m *MessageHandler) HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error) {
-	return DTO.RocketSpeedIncreased{}, nil
+	d := data.(map[string]interface{})
+
+	msg := DTO.RocketSpeedIncreased{}
+	errMsg := ""
+
+	if speed, ok := d["by"].(int); ok {
+		msg.By = speed
+	} else {
+		errMsg += "Unable to parse speed. "
+	}
+
+	if errMsg != "" {
+		err := fmt.Errorf("caught errors while parsing data: %s", errMsg)
+		return msg, err
+	}
+
+	return msg, nil
 }
 
 func (m *MessageHandler) HandleSpeedDecreaseMessage(data interface{}) (DTO.RocketSpeedDecreased, error) {
