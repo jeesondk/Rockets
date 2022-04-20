@@ -5,10 +5,10 @@ import (
 	"fmt"
 )
 
-type MessageHandler struct {
+type MessageService struct {
 }
 
-func (m *MessageHandler) HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
+func (m *MessageService) HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
 	d := data.(map[string]interface{})
 
 	msg := DTO.RocketLaunched{}
@@ -26,8 +26,12 @@ func (m *MessageHandler) HandleLaunchMessage(data interface{}) (DTO.RocketLaunch
 		errMsg += "Unable to parse mission. "
 	}
 
-	if launchSpeed, ok := d["launchSpeed"].(int); ok {
-		msg.LaunchSpeed = launchSpeed
+	if speed, ok := d["launchSpeed"].(int); ok {
+		if speed < 0 {
+			speed = speed * -1
+		}
+		msg.LaunchSpeed = speed
+
 	} else {
 		errMsg += "Unable to parse launchSpeed. "
 	}
@@ -40,13 +44,16 @@ func (m *MessageHandler) HandleLaunchMessage(data interface{}) (DTO.RocketLaunch
 	return msg, nil
 }
 
-func (m *MessageHandler) HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error) {
+func (m *MessageService) HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error) {
 	d := data.(map[string]interface{})
 
 	msg := DTO.RocketSpeedIncreased{}
 	errMsg := ""
 
 	if speed, ok := d["by"].(int); ok {
+		if speed < 0 {
+			speed = speed * -1
+		}
 		msg.By = speed
 	} else {
 		errMsg += "Unable to parse speed. "
@@ -60,13 +67,16 @@ func (m *MessageHandler) HandleSpeedIncreaseMessage(data interface{}) (DTO.Rocke
 	return msg, nil
 }
 
-func (m *MessageHandler) HandleSpeedDecreaseMessage(data interface{}) (DTO.RocketSpeedDecreased, error) {
+func (m *MessageService) HandleSpeedDecreaseMessage(data interface{}) (DTO.RocketSpeedDecreased, error) {
 	d := data.(map[string]interface{})
 
 	msg := DTO.RocketSpeedDecreased{}
 	errMsg := ""
 
 	if speed, ok := d["by"].(int); ok {
+		if speed < 0 {
+			speed = speed * -1
+		}
 		msg.By = speed
 	} else {
 		errMsg += "Unable to parse speed. "
@@ -80,6 +90,14 @@ func (m *MessageHandler) HandleSpeedDecreaseMessage(data interface{}) (DTO.Rocke
 	return msg, nil
 }
 
-func NewMessageHandler() *MessageHandler {
-	return &MessageHandler{}
+func (m *MessageService) HandleMissionChangedMessage(data interface{}) (DTO.RocketMissionChanged, error) {
+	return DTO.RocketMissionChanged{}, nil
+}
+
+func (m *MessageService) HandleRocketExploedeMessage(data interface{}) (DTO.RocketExploded, error) {
+	return DTO.RocketExploded{}, nil
+}
+
+func NewMessageHandler() *MessageService {
+	return &MessageService{}
 }
