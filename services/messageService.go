@@ -111,7 +111,23 @@ func (m *MessageService) HandleMissionChangedMessage(data interface{}) (DTO.Rock
 }
 
 func (m *MessageService) HandleRocketExplodedMessage(data interface{}) (DTO.RocketExploded, error) {
-	return DTO.RocketExploded{}, nil
+	d := data.(map[string]interface{})
+
+	msg := DTO.RocketExploded{}
+	errMsg := ""
+
+	if exploded, ok := d["reason"].(string); ok {
+		msg.Reason = exploded
+	} else {
+		errMsg += "Unable to parse reason. "
+	}
+
+	if errMsg != "" {
+		err := fmt.Errorf("caught errors while parsing data: %s", errMsg)
+		return msg, err
+	}
+
+	return msg, nil
 }
 
 func NewMessageHandler() *MessageService {

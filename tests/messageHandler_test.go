@@ -228,7 +228,7 @@ func TestFailHandleNewMissionMsg(t *testing.T) {
 
 func TestCanHandleExplodedMsg(t *testing.T) {
 	message := make(map[string]interface{})
-	message["reason"] = "SHUTTLE_MIR"
+	message["reason"] = "PRESSURE_VESSEL_FAILURE"
 
 	expected := DTO.RocketExploded{
 		Reason: "PRESSURE_VESSEL_FAILURE",
