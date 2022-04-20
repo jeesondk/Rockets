@@ -29,7 +29,7 @@ func TestCanHandleJsonRequest(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := gin.Default()
 
-	r.POST("/messages", c.Messages)
+	r.POST("/messages", c.RecieveMessage)
 	req, _ := http.NewRequest("POST", "/messages", strings.NewReader(request))
 	r.ServeHTTP(w, req)
 
@@ -52,7 +52,7 @@ func TestCanHandleInvalidRequest(t *testing.T) {
 	c := controllers.NewController()
 	w := httptest.NewRecorder()
 	r := gin.Default()
-	r.POST("/messages", c.Messages)
+	r.POST("/messages", c.RecieveMessage)
 	req, _ := http.NewRequest("POST", "/messages", strings.NewReader(request))
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)

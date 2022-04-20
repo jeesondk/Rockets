@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (c *Controller) Messages(ctx *gin.Context) {
+func (c *Controller) RecieveMessage(ctx *gin.Context) {
 	var request DTO.RequestMessage
 	empty := DTO.RequestMessage{}
 
