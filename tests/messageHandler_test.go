@@ -228,14 +228,14 @@ func TestFailHandleNewMissionMsg(t *testing.T) {
 
 func TestCanHandleExplodedMsg(t *testing.T) {
 	message := make(map[string]interface{})
-	message["newMission"] = "SHUTTLE_MIR"
+	message["reason"] = "SHUTTLE_MIR"
 
-	expected := DTO.RocketMissionChanged{
-		NewMission: "SHUTTLE_MIR",
+	expected := DTO.RocketExploded{
+		Reason: "PRESSURE_VESSEL_FAILURE",
 	}
 
 	h := services.NewMessageHandler()
-	resp, err := h.HandleMissionChangedMessage(message)
+	resp, err := h.HandleRocketExplodedMessage(message)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expected, resp)
@@ -244,14 +244,14 @@ func TestCanHandleExplodedMsg(t *testing.T) {
 
 func TestFailHandleExplodedMsg(t *testing.T) {
 	message := make(map[string]interface{})
-	message["newMission"] = 42
+	message["reason"] = 42
 
-	expected := DTO.RocketMissionChanged{}
+	expected := DTO.RocketExploded{}
 
 	h := services.NewMessageHandler()
-	resp, err := h.HandleMissionChangedMessage(message)
+	resp, err := h.HandleRocketExplodedMessage(message)
 
-	assert.Error(t, err, "caught errors while parsing data: Unable to parse mission. ")
+	assert.Error(t, err, "caught errors while parsing data: Unable to parse reason. ")
 	assert.Equal(t, expected, resp)
 
 }
