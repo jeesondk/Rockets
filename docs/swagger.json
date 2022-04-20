@@ -1,0 +1,28 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "paths": {
+        "/messages": {
+            "post": {
+                "description": "returns string",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Message Service"
+                ],
+                "summary": "Receive Rocket status messages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
