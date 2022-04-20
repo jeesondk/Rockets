@@ -83,3 +83,35 @@ func TestFailHandleLaunchMsgSpeedErr(t *testing.T) {
 	assert.Equal(t, expected, resp)
 
 }
+
+func TestCanHandleSpeedIncreaseMsg(t *testing.T) {
+	message := make(map[string]interface{})
+	message["by"] = 2500
+
+	expected := DTO.RocketSpeedIncreased{
+		By: 2500,
+	}
+
+	h := services.NewMessageHandler()
+	resp, err := h.HandleSpeedIncreaseMessage(message)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expected, resp)
+
+}
+
+func TestCanHandleSpeedDecreaseMsg(t *testing.T) {
+	message := make(map[string]interface{})
+	message["by"] = 1500
+
+	expected := DTO.RocketSpeedDecreased{
+		By: 1500,
+	}
+
+	h := services.NewMessageHandler()
+	resp, err := h.HandleSpeedIncreaseMessage(message)
+
+	assert.Nil(t, err)
+	assert.Equal(t, expected, resp)
+
+}

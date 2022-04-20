@@ -40,6 +40,14 @@ func (m *MessageHandler) HandleLaunchMessage(data interface{}) (DTO.RocketLaunch
 	return msg, nil
 }
 
+func (m *MessageHandler) HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error) {
+	return DTO.RocketSpeedIncreased{}, nil
+}
+
+func (m *MessageHandler) HandleSpeedDecreaseMessage(data interface{}) (DTO.RocketSpeedDecreased, error) {
+	return DTO.RocketSpeedDecreased{}, nil
+}
+
 func NewMessageHandler() *MessageHandler {
 	return &MessageHandler{}
 }
