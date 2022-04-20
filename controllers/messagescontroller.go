@@ -8,8 +8,9 @@ import (
 
 func (c *Controller) Messages(ctx *gin.Context) {
 	var request DTO.RequestMessage
+	empty := DTO.RequestMessage{}
 
-	if err := ctx.ShouldBindJSON(&request); err != nil || request.Metadata.Channel == "" {
+	if err := ctx.ShouldBindJSON(&request); err != nil || request.Metadata == empty.Metadata {
 		ctx.JSON(http.StatusUnprocessableEntity, "Invalid request")
 		return
 	}
