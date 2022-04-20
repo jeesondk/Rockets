@@ -109,7 +109,7 @@ func TestCanHandleSpeedDecreaseMsg(t *testing.T) {
 	}
 
 	h := services.NewMessageHandler()
-	resp, err := h.HandleSpeedIncreaseMessage(message)
+	resp, err := h.HandleSpeedDecreaseMessage(message)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expected, resp)
