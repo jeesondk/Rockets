@@ -2,11 +2,11 @@ package services
 
 import (
 	DTO "RocketService/dto"
+	"RocketService/entities"
 	"fmt"
 )
 
-type MessageService struct {
-}
+type MessageService struct{}
 
 func (m *MessageService) HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
 	d := data.(map[string]interface{})
@@ -130,6 +130,19 @@ func (m *MessageService) HandleRocketExplodedMessage(data interface{}) (DTO.Rock
 	return msg, nil
 }
 
-func NewMessageHandler() *MessageService {
-	return &MessageService{}
+func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) (entities.Rocket, error) {
+	return entities.Rocket{}, nil
+}
+
+func NewMessageService() MESSAGESERVICE {
+	return new(MessageService)
+}
+
+type MESSAGESERVICE interface {
+	HandleMessage(metadata DTO.MetaData, message interface{}) (entities.Rocket, error)
+	HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error)
+	HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error)
+	HandleSpeedDecreaseMessage(data interface{}) (DTO.RocketSpeedDecreased, error)
+	HandleMissionChangedMessage(data interface{}) (DTO.RocketMissionChanged, error)
+	HandleRocketExplodedMessage(data interface{}) (DTO.RocketExploded, error)
 }

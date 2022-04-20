@@ -2,8 +2,10 @@ package tests
 
 import (
 	"RocketService/controllers"
+	DTO "RocketService/dto"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -25,11 +27,18 @@ func TestCanHandleJsonRequest(t *testing.T) {
 					}
 				}`
 
-	c := controllers.NewController()
+	messageServiceMock := messageServiceMock{}
+	messageServiceMock.On("HandleMessage", mock.Anything).Return(DTO.RocketLaunched{
+		Type:        "Falcon-9",
+		LaunchSpeed: 500,
+		Mission:     "ARTEMIS",
+	}, nil)
+
+	c := controllers.Controller{MessageService: &messageServiceMock}
 	w := httptest.NewRecorder()
 	r := gin.Default()
 
-	r.POST("/messages", c.RecieveMessage)
+	r.POST("/messages", c.ReceiveMessage)
 	req, _ := http.NewRequest("POST", "/messages", strings.NewReader(request))
 	r.ServeHTTP(w, req)
 
@@ -52,7 +61,7 @@ func TestCanHandleInvalidRequest(t *testing.T) {
 	c := controllers.NewController()
 	w := httptest.NewRecorder()
 	r := gin.Default()
-	r.POST("/messages", c.RecieveMessage)
+	r.POST("/messages", c.ReceiveMessage)
 	req, _ := http.NewRequest("POST", "/messages", strings.NewReader(request))
 	r.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)

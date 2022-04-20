@@ -1,11 +1,15 @@
 package controllers
 
-import "sync"
+import (
+	"RocketService/services"
+)
 
 type Controller struct {
-	Mutex sync.Mutex
+	MessageService services.MESSAGESERVICE
 }
 
 func NewController() *Controller {
-	return &Controller{}
+	return &Controller{
+		MessageService: services.NewMessageService(),
+	}
 }
