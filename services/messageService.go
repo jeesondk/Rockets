@@ -3,10 +3,14 @@ package services
 import (
 	DTO "RocketService/dto"
 	"RocketService/entities"
+	"RocketService/enum"
+	"RocketService/interfaces"
 	"fmt"
 )
 
-type MessageService struct{}
+type MessageService struct {
+	Rockets entities.RocketRepository
+}
 
 func (m *MessageService) HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
 	d := data.(map[string]interface{})
@@ -131,18 +135,88 @@ func (m *MessageService) HandleRocketExplodedMessage(data interface{}) (DTO.Rock
 }
 
 func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) (entities.Rocket, error) {
-	return entities.Rocket{}, nil
+	var rocket entities.Rocket
+	switch metadata.MessageType {
+	case enum.RocketLaunched:
+		msg, err := m.HandleLaunchMessage(data)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+
+		res, err := m.Rockets.Create(entities.Rocket{
+			Type:    msg.Type,
+			Mission: msg.Mission,
+			Speed: entities.RocketSpeed{
+				Current: msg.LaunchSpeed,
+				Max:     msg.LaunchSpeed,
+			},
+			LaunchDate: metadata.MessageTime,
+			Status: entities.RocketStatus{
+				Active: true,
+				Reason: "",
+			},
+		})
+
+		rocket = res
+
+	case enum.RocketSpeedIncreased:
+		msg, err := m.HandleSpeedIncreaseMessage(data)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket, err = m.Rockets.GetByID(metadata.Channel)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket.Speed.Update(msg.By)
+		_, err = m.Rockets.Update(rocket)
+
+	case enum.RocketSpeedDecreased:
+		msg, err := m.HandleSpeedDecreaseMessage(data)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket, err = m.Rockets.GetByID(metadata.Channel)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket.Speed.Update(msg.By * -1)
+		_, err = m.Rockets.Update(rocket)
+
+	case enum.RocketMissionChanged:
+		msg, err := m.HandleMissionChangedMessage(data)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket, err = m.Rockets.GetByID(metadata.Channel)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket.Mission = msg.NewMission
+		_, err = m.Rockets.Update(rocket)
+
+	case enum.RocketExploded:
+		msg, err := m.HandleRocketExplodedMessage(data)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket, err = m.Rockets.GetByID(metadata.Channel)
+		if err != nil {
+			return entities.Rocket{}, err
+		}
+		rocket.Status = entities.RocketStatus{
+			Active: false,
+			Reason: msg.Reason,
+		}
+		_, err = m.Rockets.Update(rocket)
+
+	}
+
+	return rocket, nil
 }
 
-func NewMessageService() MESSAGESERVICE {
-	return new(MessageService)
-}
-
-type MESSAGESERVICE interface {
-	HandleMessage(metadata DTO.MetaData, message interface{}) (entities.Rocket, error)
-	HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error)
-	HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error)
-	HandleSpeedDecreaseMessage(data interface{}) (DTO.RocketSpeedDecreased, error)
-	HandleMissionChangedMessage(data interface{}) (DTO.RocketMissionChanged, error)
-	HandleRocketExplodedMessage(data interface{}) (DTO.RocketExploded, error)
+func NewMessageService() interfaces.MessageService {
+	return &MessageService{
+		Rockets: entities.NewRocketRepository(),
+	}
 }
