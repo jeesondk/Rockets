@@ -91,10 +91,26 @@ func (m *MessageService) HandleSpeedDecreaseMessage(data interface{}) (DTO.Rocke
 }
 
 func (m *MessageService) HandleMissionChangedMessage(data interface{}) (DTO.RocketMissionChanged, error) {
-	return DTO.RocketMissionChanged{}, nil
+	d := data.(map[string]interface{})
+
+	msg := DTO.RocketMissionChanged{}
+	errMsg := ""
+
+	if mission, ok := d["newMission"].(string); ok {
+		msg.NewMission = mission
+	} else {
+		errMsg += "Unable to parse mission. "
+	}
+
+	if errMsg != "" {
+		err := fmt.Errorf("caught errors while parsing data: %s", errMsg)
+		return msg, err
+	}
+
+	return msg, nil
 }
 
-func (m *MessageService) HandleRocketExploedeMessage(data interface{}) (DTO.RocketExploded, error) {
+func (m *MessageService) HandleRocketExplodedMessage(data interface{}) (DTO.RocketExploded, error) {
 	return DTO.RocketExploded{}, nil
 }
 
