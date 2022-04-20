@@ -6,7 +6,14 @@ import (
 	"net/http"
 )
 
-func (c *Controller) RecieveMessage(ctx *gin.Context) {
+// ReceiveMessage godoc
+// @Summary      Receive Rocket status messages
+// @Description  returns string
+// @Tags         Message Service
+// @Produce      plain
+// @Success      200  {object}  string
+// @Router       /messages [post]
+func (c *Controller) ReceiveMessage(ctx *gin.Context) {
 	var request DTO.RequestMessage
 	empty := DTO.RequestMessage{}
 

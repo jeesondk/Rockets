@@ -1,11 +1,13 @@
 package tests
 
 import (
-	DTO "RocketService/dto"
+	"RocketService/dto"
 	"RocketService/entities"
+	"RocketService/enum"
 	"RocketService/services"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"testing"
 	"time"
 )
@@ -256,33 +258,130 @@ func TestFailHandleExplodedMsg(t *testing.T) {
 
 	assert.Error(t, err, "caught errors while parsing data: Unable to parse reason. ")
 	assert.Equal(t, expected, resp)
-
 }
 
 func TestMessageHandleMessages(t *testing.T) {
+	ts := time.Now().String()
 	rocket := entities.Rocket{
-		ID:   "1",
+		ID:   "rocket_id",
+		Type: "Falcon 9",
+		Speed: entities.RocketSpeed{
+			Current: 500,
+			Max:     500,
+		},
+		Mission:    "ARTEMIS",
+		LaunchDate: ts,
+		Status: entities.RocketStatus{
+			Active: true,
+			Reason: "",
+		},
+	}
+
+	rocketRepositoryMock := &rocketRepositoryMock{}
+
+	//Mock CreateRocket
+	rocketRepositoryMock.On("Create", mock.Anything).Return(rocket, nil)
+
+	//Mock GetRocket
+	rocketRepositoryMock.On("GetByID", mock.Anything).Return(rocket, nil)
+
+	//Mock UpdateRocket, increase speed
+	rocketRepositoryMock.On("Update", entities.Rocket{
+		ID:   "rocket_id",
+		Type: "Falcon 9",
+		Speed: entities.RocketSpeed{
+			Current: 3000,
+			Max:     3000,
+		},
+		Mission:    "ARTEMIS",
+		LaunchDate: ts,
+		Status: entities.RocketStatus{
+			Active: true,
+			Reason: "",
+		}}).Return(rocket, nil)
+
+	//Mock UpdateRocket, decrease speed
+	rocketRepositoryMock.On("Update", entities.Rocket{
+		ID:   "rocket_id",
 		Type: "Falcon 9",
 		Speed: entities.RocketSpeed{
 			Current: 0,
-			Max:     10000,
+			Max:     500,
 		},
 		Mission:    "ARTEMIS",
-		LaunchDate: time.Now(),
-	}
+		LaunchDate: ts,
+		Status: entities.RocketStatus{
+			Active: true,
+			Reason: "",
+		}}).Return(rocket, nil)
+
+	//Mock UpdateRocket, new mission
+	rocketRepositoryMock.On("Update", entities.Rocket{
+		ID:   "rocket_id",
+		Type: "Falcon 9",
+		Speed: entities.RocketSpeed{
+			Current: 500,
+			Max:     500,
+		},
+		Mission:    "SHUTTLE_MIR",
+		LaunchDate: ts,
+		Status: entities.RocketStatus{
+			Active: true,
+			Reason: "",
+		}}).Return(rocket, nil)
+
+	//Mock UpdateRocket, exploded
+	rocketRepositoryMock.On("Update", entities.Rocket{
+		ID:   "rocket_id",
+		Type: "Falcon 9",
+		Speed: entities.RocketSpeed{
+			Current: 500,
+			Max:     500,
+		},
+		Mission:    "ARTEMIS",
+		LaunchDate: ts,
+		Status: entities.RocketStatus{
+			Active: false,
+			Reason: "PRESSURE_VESSEL_FAILURE",
+		}}).Return(rocket, nil)
 
 	tests := []struct {
 		name     string
-		rocket   entities.Rocket
 		metadata DTO.MetaData
 		message  map[string]interface{}
 		expected entities.Rocket
 	}{
-		{"CAN_HANDLE_SPEED_INCREASE_MSG",
-			rocket,
+		{"CAN_HANDLE_LAUNCH_ROCKET_MSG",
 			DTO.MetaData{
 				Channel:       "rocket_id",
-				MessageType:   "SPEED_INCREASE",
+				MessageType:   enum.RocketLaunched,
+				MessageNumber: 1,
+				MessageTime:   time.Now().String(),
+			},
+			map[string]interface{}{
+				"type":        "Falcon-9",
+				"launchSpeed": 500,
+				"mission":     "ARTEMIS",
+			},
+			entities.Rocket{
+				ID:   "rocket_id",
+				Type: "Falcon 9",
+				Speed: entities.RocketSpeed{
+					Current: 500,
+					Max:     500,
+				},
+				Mission:    "ARTEMIS",
+				LaunchDate: ts,
+				Status: entities.RocketStatus{
+					Active: true,
+					Reason: "",
+				},
+			},
+		},
+		{"CAN_HANDLE_SPEED_INCREASE_MSG",
+			DTO.MetaData{
+				Channel:       "rocket_id",
+				MessageType:   enum.RocketSpeedIncreased,
 				MessageNumber: 1,
 				MessageTime:   time.Now().String(),
 			},
@@ -290,37 +389,49 @@ func TestMessageHandleMessages(t *testing.T) {
 				"by": 2500,
 			},
 			entities.Rocket{
-				ID: "rocket_id",
+				ID:   "rocket_id",
+				Type: "Falcon 9",
 				Speed: entities.RocketSpeed{
-					Current: 3500,
-					Max:     10000,
+					Current: 3000,
+					Max:     3000,
+				},
+				Mission:    "ARTEMIS",
+				LaunchDate: ts,
+				Status: entities.RocketStatus{
+					Active: true,
+					Reason: "",
 				},
 			},
 		},
 		{"CAN_HANDLE_SPEED_DECREASE_MSG",
-			rocket,
 			DTO.MetaData{
 				Channel:       "rocket_id",
-				MessageType:   "SPEED_DECREASE",
+				MessageType:   enum.RocketSpeedDecreased,
 				MessageNumber: 1,
-				MessageTime:   time.Now().String(),
+				MessageTime:   ts,
 			},
 			map[string]interface{}{
-				"by": -1500,
+				"by": 500,
 			},
 			entities.Rocket{
-				ID: "rocket_id",
+				ID:   "rocket_id",
+				Type: "Falcon 9",
 				Speed: entities.RocketSpeed{
-					Current: 3500,
-					Max:     10000,
+					Current: 0,
+					Max:     500,
+				},
+				Mission:    "ARTEMIS",
+				LaunchDate: ts,
+				Status: entities.RocketStatus{
+					Active: true,
+					Reason: "",
 				},
 			},
 		},
 		{"CAN_HANDLE_MISSION_CHANGED_MSG",
-			rocket,
 			DTO.MetaData{
 				Channel:       "rocket_id",
-				MessageType:   "MISSION_CHANGED",
+				MessageType:   enum.RocketMissionChanged,
 				MessageNumber: 1,
 				MessageTime:   time.Now().String(),
 			},
@@ -328,15 +439,24 @@ func TestMessageHandleMessages(t *testing.T) {
 				"newMission": "SHUTTLE_MIR",
 			},
 			entities.Rocket{
-				ID:      "rocket_id",
-				Mission: "SHUTTLE_MIR",
+				ID:   "rocket_id",
+				Type: "Falcon 9",
+				Speed: entities.RocketSpeed{
+					Current: 500,
+					Max:     500,
+				},
+				Mission:    "SHUTTLE_MIR",
+				LaunchDate: ts,
+				Status: entities.RocketStatus{
+					Active: true,
+					Reason: "",
+				},
 			},
 		},
 		{"CAN_HANDLE_EXPLODED_MSG",
-			rocket,
 			DTO.MetaData{
 				Channel:       "rocket_id",
-				MessageType:   "EXPLODED",
+				MessageType:   enum.RocketExploded,
 				MessageNumber: 1,
 				MessageTime:   time.Now().String(),
 			},
@@ -344,15 +464,25 @@ func TestMessageHandleMessages(t *testing.T) {
 				"reason": "PRESSURE_VESSEL_FAILURE",
 			},
 			entities.Rocket{
-				ID:     "rocket_id",
-				Status: entities.RocketStatus{Active: false, Reason: "EXPLODED"},
+				ID:   "rocket_id",
+				Type: "Falcon 9",
+				Speed: entities.RocketSpeed{
+					Current: 500,
+					Max:     500,
+				},
+				Mission:    "ARTEMIS",
+				LaunchDate: ts,
+				Status: entities.RocketStatus{
+					Active: false,
+					Reason: "PRESSURE_VESSEL_FAILURE",
+				},
 			},
 		},
 	}
 
 	for i, tc := range tests {
 		t.Run(fmt.Sprintf("Test %d: %s", i, tc.name), func(t *testing.T) {
-			s := services.NewMessageService()
+			s := services.MessageService{rocketRepositoryMock}
 			resp, err := s.HandleMessage(tc.metadata, tc.message)
 
 			assert.Nil(t, err)

@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"RocketService/interfaces"
 	"RocketService/services"
 )
 
 type Controller struct {
-	MessageService services.MESSAGESERVICE
+	MessageService interfaces.MessageService
 }
 
 func NewController() *Controller {
