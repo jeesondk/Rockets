@@ -35,3 +35,26 @@ func TestCanHandleJsonRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
+func TestCanHandleInvalidRequest(t *testing.T) {
+	request := `{
+						"mojo": {
+							"what": "193270a9-c9cf-404a-8f83-838e71d9ae67",
+							"goesbump": 1,    
+							"at": "2022-02-02T19:39:05.86337+01:00",                                          
+							"inthenight": "RocketLaunched"                             
+						},
+						"message": {                                                    
+							"type": "Falcon-9",
+							"launchSpeed": 500,
+							"mission": "ARTEMIS"  
+						}
+					}`
+	c := controllers.NewController()
+	w := httptest.NewRecorder()
+	r := gin.Default()
+	r.POST("/messages", c.Messages)
+	req, _ := http.NewRequest("POST", "/messages", strings.NewReader(request))
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+	assert.Equal(t, "\"Invalid request\"", w.Body.String())
+}
