@@ -9,5 +9,5 @@ type RequestMessage struct {
 		MessageTime   string           `json:"messageTime"`
 		MessageType   enum.MessageType `json:"messageType"`
 	} `json:"metadata"`
-	Message string `json:"-"`
+	Message interface{} `json:"message"`
 }
