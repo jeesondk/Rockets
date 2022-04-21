@@ -12,5 +12,5 @@ Run the application with the following command:
 ```.\rocketservice.exe port 9090 debug```.
 
 ## OpenAPI / Swagger
-Assuming the application runs on default port `8080`:
-http://localhost:8080/swagger/index.html
+Assuming the application runs on default port `8088`:
+http://localhost:8088/swagger/index.html

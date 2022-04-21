@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"log"
 )
 
 func main() {
@@ -28,7 +27,7 @@ func main() {
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = hostBinding
 	docs.SwaggerInfo.BasePath = "/"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	docs.SwaggerInfo.Schemes = []string{"http"}
 
 	if !debugMode {
 		gin.SetMode(gin.ReleaseMode)
@@ -39,7 +38,6 @@ func main() {
 
 	r.POST("messages", c.ReceiveMessage)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	log.Fatal(r.Run(fmt.Sprintf(":%d", serverPort)))
+	r.Run(fmt.Sprintf(":%d", serverPort))
 
 }

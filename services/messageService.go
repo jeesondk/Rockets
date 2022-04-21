@@ -136,6 +136,7 @@ func (m *MessageService) HandleRocketExplodedMessage(data interface{}) (DTO.Rock
 
 func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) (entities.Rocket, error) {
 	var rocket entities.Rocket
+
 	switch metadata.MessageType {
 	case enum.RocketLaunched:
 		msg, err := m.HandleLaunchMessage(data)
@@ -143,7 +144,8 @@ func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) 
 			return entities.Rocket{}, err
 		}
 
-		res, err := m.Rockets.Create(entities.Rocket{
+		newRocket := entities.Rocket{
+			ID:      metadata.Channel,
 			Type:    msg.Type,
 			Mission: msg.Mission,
 			Speed: entities.RocketSpeed{
@@ -155,61 +157,112 @@ func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) 
 				Active: true,
 				Reason: "",
 			},
-		})
+		}
 
-		rocket = res
+		ch := make(chan *entities.Rocket)
+		errCh := make(chan error)
+		go m.Rockets.Create(newRocket, ch, errCh)
+
+		rocket = newRocket
 
 	case enum.RocketSpeedIncreased:
 		msg, err := m.HandleSpeedIncreaseMessage(data)
 		if err != nil {
 			return entities.Rocket{}, err
 		}
-		rocket, err = m.Rockets.GetByID(metadata.Channel)
-		if err != nil {
+		ch := make(chan *entities.Rocket)
+		errCh := make(chan error)
+		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
+
+		if <-errCh != nil {
 			return entities.Rocket{}, err
 		}
 		rocket.Speed.Update(msg.By)
-		_, err = m.Rockets.Update(rocket)
+
+		ch = make(chan *entities.Rocket)
+		errCh = make(chan error)
+		go m.Rockets.Update(rocket, ch, errCh)
+
+		if <-errCh != nil {
+			return entities.Rocket{}, err
+		}
 
 	case enum.RocketSpeedDecreased:
 		msg, err := m.HandleSpeedDecreaseMessage(data)
 		if err != nil {
 			return entities.Rocket{}, err
 		}
-		rocket, err = m.Rockets.GetByID(metadata.Channel)
-		if err != nil {
+
+		ch := make(chan *entities.Rocket)
+		errCh := make(chan error)
+
+		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
+		if <-errCh != nil {
 			return entities.Rocket{}, err
 		}
+
+		ch = make(chan *entities.Rocket)
+		errCh = make(chan error)
+
 		rocket.Speed.Update(msg.By * -1)
-		_, err = m.Rockets.Update(rocket)
+		go m.Rockets.Update(rocket, ch, errCh)
+
+		if <-errCh != nil {
+			return entities.Rocket{}, err
+		}
 
 	case enum.RocketMissionChanged:
 		msg, err := m.HandleMissionChangedMessage(data)
 		if err != nil {
 			return entities.Rocket{}, err
 		}
-		rocket, err = m.Rockets.GetByID(metadata.Channel)
-		if err != nil {
+
+		ch := make(chan *entities.Rocket)
+		errCh := make(chan error)
+
+		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
+		if <-errCh != nil {
 			return entities.Rocket{}, err
 		}
+
 		rocket.Mission = msg.NewMission
-		_, err = m.Rockets.Update(rocket)
+
+		ch = make(chan *entities.Rocket)
+		errCh = make(chan error)
+
+		go m.Rockets.Update(rocket, ch, errCh)
+		if <-errCh != nil {
+			return entities.Rocket{}, err
+		}
 
 	case enum.RocketExploded:
 		msg, err := m.HandleRocketExplodedMessage(data)
 		if err != nil {
 			return entities.Rocket{}, err
 		}
-		rocket, err = m.Rockets.GetByID(metadata.Channel)
-		if err != nil {
+
+		ch := make(chan *entities.Rocket)
+		errCh := make(chan error)
+
+		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
+
+		if <-errCh != nil {
 			return entities.Rocket{}, err
 		}
+
 		rocket.Status = entities.RocketStatus{
 			Active: false,
 			Reason: msg.Reason,
 		}
-		_, err = m.Rockets.Update(rocket)
 
+		ch = make(chan *entities.Rocket)
+		errCh = make(chan error)
+
+		go m.Rockets.Update(rocket, ch, errCh)
+
+		if <-errCh != nil {
+			return entities.Rocket{}, err
+		}
 	}
 
 	return rocket, nil
