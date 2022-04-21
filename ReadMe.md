@@ -1,4 +1,5 @@
 # Rocket Service API
+This application is written / build in GoLang 1.18
 
 ## Start the application
 Run the application with the following command:
