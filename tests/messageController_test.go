@@ -2,7 +2,7 @@ package tests
 
 import (
 	"RocketService/controllers"
-	"RocketService/dto"
+	"RocketService/entities"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -28,11 +28,7 @@ func TestCanHandleJsonRequest(t *testing.T) {
 				}`
 
 	messageServiceMock := messageServiceMock{}
-	messageServiceMock.On("HandleMessage", mock.Anything).Return(DTO.RocketLaunched{
-		Type:        "Falcon-9",
-		LaunchSpeed: 500.00,
-		Mission:     "ARTEMIS",
-	}, nil)
+	messageServiceMock.On("HandleMessage", mock.Anything, mock.Anything).Return(entities.Rocket{}, nil)
 
 	c := controllers.Controller{MessageService: &messageServiceMock}
 	w := httptest.NewRecorder()

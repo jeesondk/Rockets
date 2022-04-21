@@ -111,10 +111,10 @@ func TestFailHandleLaunchMsgSpeedErr(t *testing.T) {
 
 func TestCanHandleSpeedIncreaseMsg(t *testing.T) {
 	message := make(map[string]interface{})
-	message["by"] = 2500
+	message["by"] = 2500.00
 
 	expected := DTO.RocketSpeedIncreased{
-		By: 2500,
+		By: 2500.00,
 	}
 
 	h := services.NewMessageService()
@@ -127,10 +127,10 @@ func TestCanHandleSpeedIncreaseMsg(t *testing.T) {
 
 func TestCanHandleSpeedDecreaseMsg(t *testing.T) {
 	message := make(map[string]interface{})
-	message["by"] = 1500
+	message["by"] = 1500.00
 
 	expected := DTO.RocketSpeedDecreased{
-		By: 1500,
+		By: 1500.00,
 	}
 
 	h := services.NewMessageService()
@@ -143,10 +143,10 @@ func TestCanHandleSpeedDecreaseMsg(t *testing.T) {
 
 func TestCanHandleNegSpeedIncreaseMsg(t *testing.T) {
 	message := make(map[string]interface{})
-	message["by"] = -2500
+	message["by"] = -2500.00
 
 	expected := DTO.RocketSpeedIncreased{
-		By: 2500,
+		By: 2500.00,
 	}
 
 	h := services.NewMessageService()
@@ -159,10 +159,10 @@ func TestCanHandleNegSpeedIncreaseMsg(t *testing.T) {
 
 func TestCanHandleNegSpeedDecreaseMsg(t *testing.T) {
 	message := make(map[string]interface{})
-	message["by"] = -1500
+	message["by"] = -1500.00
 
 	expected := DTO.RocketSpeedDecreased{
-		By: 1500,
+		By: 1500.00,
 	}
 
 	h := services.NewMessageService()

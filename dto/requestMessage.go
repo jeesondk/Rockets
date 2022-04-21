@@ -9,7 +9,7 @@ type RequestMessage struct {
 
 type MetaData struct {
 	Channel       string           `json:"channel"`
-	MessageNumber int64            `json:"messageNumber"`
+	MessageNumber int              `json:"messageNumber"`
 	MessageTime   string           `json:"messageTime"`
 	MessageType   enum.MessageType `json:"messageType"`
 }
