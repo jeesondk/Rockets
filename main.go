@@ -3,6 +3,8 @@ package main
 import (
 	"RocketService/controllers"
 	"RocketService/docs"
+	"RocketService/entities"
+	"RocketService/services"
 	"context"
 	"errors"
 	"flag"
@@ -14,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -42,10 +45,37 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	r := gin.Default()
-	c := controllers.NewController()
+	var mux = sync.Mutex{}
+	var wg = sync.WaitGroup{}
 
-	r.POST("messages", c.ReceiveMessage)
+	r := gin.Default()
+
+	rp := entities.NewRocketRepository()
+
+	ms := services.NewMessageService()
+	ms.RocketRepository = &rp
+	ms.Mux = &mux
+	ms.Wg = &wg
+
+	rs := services.NewRocketService()
+	rs.RocketRepository = &rp
+	rs.MessageService = &ms
+	rs.Mux = &mux
+	rs.Wg = &wg
+
+	go func() {
+		for range time.Tick(time.Second * 10) {
+			rs.UpdateRockets()
+		}
+	}()
+
+	c := controllers.NewController()
+	c.MessageService = &ms
+	c.RocketService = &rs
+
+	r.POST("/messages", c.ReceiveMessage)
+	r.GET("/rockets", c.GetAllRockets)
+	r.GET("/rocket/:id", c.GetRocket)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	srv := &http.Server{
@@ -81,4 +111,5 @@ func main() {
 	}
 
 	log.Println("Server exiting")
+
 }

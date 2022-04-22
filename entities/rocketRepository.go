@@ -1,96 +1,119 @@
 package entities
 
 import (
+	DTO "RocketService/dto"
 	"fmt"
 	"sync"
 )
 
-type RocketRepository interface {
-	GetAll(ch chan *[]Rocket)
-	GetByID(id string, ch chan *Rocket, errCh chan error)
-	Create(rocket Rocket, ch chan *Rocket, errCh chan error)
-	Update(rocket Rocket, ch chan *Rocket, errCh chan error)
+type RockerRepository interface {
+	GetAll(ch chan *[]Rocket, mtx *sync.Mutex, wg *sync.WaitGroup)
+	GetByID(id string, ch chan *Rocket, mtx *sync.Mutex, wg *sync.WaitGroup, errCh chan error)
+	Create(rocket Rocket, ch chan *Rocket, mtx *sync.Mutex, wg *sync.WaitGroup, errCh chan error)
+	Update(rocket Rocket, ch chan *Rocket, mtx *sync.Mutex, wg *sync.WaitGroup, errCh chan error)
 }
 
-type Rockets struct {
-	mux              sync.Mutex
+type RocketRepository struct {
 	rocketCollection map[string]Rocket
+	//rocketEventCollection map[string]RocketEvent
+	rocketEventCollection map[string][]RocketEvent
 }
 
-func (r Rockets) GetAll(ch chan *[]Rocket) {
-	defer close(ch)
-	r.mux.Lock()
-	rockets := make([]Rocket, len(r.rocketCollection))
+func (r RocketRepository) GetAllRockets(mtx *sync.Mutex, wg *sync.WaitGroup) *[]Rocket {
+	mtx.Lock()
+	rockets := make([]Rocket, 0)
 	for _, value := range r.rocketCollection {
 		rockets = append(rockets, value)
 	}
-	r.mux.Unlock()
-	ch <- &rockets
+	mtx.Unlock()
+	wg.Done()
+	return &rockets
 }
 
-func (r Rockets) GetByID(id string, ch chan *Rocket, errCh chan error) {
-	defer close(ch)
-	defer close(errCh)
+func (r RocketRepository) GetByID(id string, mtx *sync.Mutex, wg *sync.WaitGroup) (*Rocket, error) {
 
-	r.mux.Lock()
-	var rocket = r.rocketCollection[id]
-	r.mux.Unlock()
+	mtx.Lock()
+	rocket, ok := r.rocketCollection[id]
+	mtx.Unlock()
 
-	if rocket == (Rocket{}) {
-		errCh <- fmt.Errorf("Rocket not found")
-		ch <- nil
+	if !ok {
+		return &rocket, fmt.Errorf("rocket not found")
+	}
+	wg.Done()
+	return &rocket, nil
+}
+
+func (r RocketRepository) Create(rocket *Rocket, mtx *sync.Mutex, wg *sync.WaitGroup) error {
+	mtx.Lock()
+	id := rocket.ID
+	_, exists := r.rocketCollection[id]
+	mtx.Unlock()
+
+	if exists {
+		return fmt.Errorf("rocket already exists")
 	}
 
-	errCh <- nil
-	ch <- &rocket
+	mtx.Lock()
+	r.rocketCollection[id] = *rocket
+	mtx.Unlock()
+
+	wg.Done()
+	return nil
 }
 
-func (r Rockets) Create(rocket Rocket, ch chan *Rocket, errCh chan error) {
-	defer close(ch)
-	defer close(errCh)
+func (r RocketRepository) Update(rocket *Rocket, mtx *sync.Mutex, wg *sync.WaitGroup) error {
+	mtx.Lock()
+	defer mtx.Unlock()
 
-	r.mux.Lock()
-
-	if r.rocketCollection[rocket.ID] != (Rocket{}) {
-		r.mux.Unlock()
-		errCh <- fmt.Errorf("Rocket already exists")
-		ch <- nil
+	var err error
+	res, ok := r.rocketCollection[rocket.ID]
+	if !ok {
+		err = fmt.Errorf("rocket not found")
 	}
 
-	r.rocketCollection[rocket.ID] = rocket
-	r.mux.Unlock()
-
-	errCh <- nil
-	ch <- &rocket
-}
-
-func (r Rockets) Update(rocket Rocket, ch chan *Rocket, errCh chan error) {
-	defer close(ch)
-	defer close(errCh)
-
-	r.mux.Lock()
-
-	res := r.rocketCollection[rocket.ID]
 	if !res.Status.Active {
-		r.mux.Unlock()
-		errCh <- fmt.Errorf("Rocket is not active, reason: %s", res.Status.Reason)
-		ch <- nil
+		err = fmt.Errorf("rocket is not active, reason: %s", res.Status.Reason)
 	}
 
-	if res == (Rocket{}) {
-		r.mux.Unlock()
-		errCh <- fmt.Errorf("Rocket not found")
-		ch <- nil
-	}
-	r.rocketCollection[rocket.ID] = rocket
-	r.mux.Unlock()
+	r.rocketCollection[rocket.ID] = *rocket
 
-	errCh <- nil
-	ch <- &res
+	wg.Done()
+	return err
 }
 
-func NewRocketRepository() *Rockets {
-	return &Rockets{
-		rocketCollection: make(map[string]Rocket),
+func (r RocketRepository) GetEvent(rocketId string, mtx *sync.Mutex, wg *sync.WaitGroup) ([]RocketEvent, error) {
+	mtx.Lock()
+	res, ok := r.rocketEventCollection[rocketId]
+	mtx.Unlock()
+
+	if !ok {
+		wg.Done()
+		return nil, fmt.Errorf("rocket event not found")
+	}
+	wg.Done()
+
+	return res, nil
+}
+
+func (r RocketRepository) AddEvent(metadata *DTO.MetaData, data interface{}, mtx *sync.Mutex, wg *sync.WaitGroup) error {
+	rocketEvent := RocketEvent{
+		metadata.Channel,
+		metadata.MessageNumber,
+		string(metadata.MessageType),
+		data,
+	}
+
+	mtx.Lock()
+	r.rocketEventCollection[metadata.Channel] = append(r.rocketEventCollection[metadata.Channel], rocketEvent)
+	mtx.Unlock()
+
+	wg.Done()
+	return nil
+}
+
+func NewRocketRepository() RocketRepository {
+	return RocketRepository{
+		rocketCollection:      make(map[string]Rocket),
+		rocketEventCollection: make(map[string][]RocketEvent),
 	}
 }

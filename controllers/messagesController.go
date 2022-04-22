@@ -20,14 +20,13 @@ func (c *Controller) ReceiveMessage(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&request); err != nil || request.Metadata == empty.Metadata {
 		ctx.JSON(http.StatusUnprocessableEntity, "Invalid request")
-		return
 	}
 
-	_, err := c.MessageService.HandleMessage(request.Metadata, request.Message)
+	err := c.MessageService.HandleMessage(request.Metadata, request.Message)
 
 	if err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, err.Error())
-		return
+		ctx.Error(err)
 	}
 	ctx.JSON(http.StatusOK, "")
 }

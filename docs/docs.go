@@ -41,6 +41,108 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/rocket/{id}": {
+            "get": {
+                "description": "returns instance of rocket",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "RocketService"
+                ],
+                "summary": "Return a rocket by id",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.Rocket"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/rockets": {
+            "get": {
+                "description": "returns array of rockets",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "RocketService"
+                ],
+                "summary": "Returns all rockets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.Rocket"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entities.Rocket": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "launchDate": {
+                    "type": "string"
+                },
+                "mission": {
+                    "type": "string"
+                },
+                "speed": {
+                    "$ref": "#/definitions/entities.RocketSpeed"
+                },
+                "status": {
+                    "$ref": "#/definitions/entities.RocketStatus"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.RocketSpeed": {
+            "type": "object",
+            "properties": {
+                "current": {
+                    "type": "number"
+                },
+                "max": {
+                    "type": "number"
+                }
+            }
+        },
+        "entities.RocketStatus": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "reason": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`

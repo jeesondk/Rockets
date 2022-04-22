@@ -4,48 +4,22 @@ import (
 	DTO "RocketService/dto"
 	"RocketService/entities"
 	"RocketService/enum"
-	"RocketService/interfaces"
 	"fmt"
+	"sync"
 )
 
-type MessageService struct {
-	Rockets entities.RocketRepository
+type MessageServiceInterface interface {
+	HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error)
+	HandleSpeedDecreaseMessage(data interface{}) (DTO.RocketSpeedDecreased, error)
+	HandleMissionChangedMessage(data interface{}) (DTO.RocketMissionChanged, error)
+	HandleRocketExplodedMessage(data interface{}) (DTO.RocketExploded, error)
+	HandleMessage(metadata DTO.MetaData, data interface{}) error
 }
 
-func (m *MessageService) HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
-	d := data.(map[string]interface{})
-
-	msg := DTO.RocketLaunched{}
-	errMsg := ""
-
-	if rocketType, ok := d["type"].(string); ok {
-		msg.Type = rocketType
-	} else {
-		errMsg += "Unable to parse type. "
-	}
-
-	if mission, ok := d["mission"].(string); ok {
-		msg.Mission = mission
-	} else {
-		errMsg += "Unable to parse mission. "
-	}
-
-	if speed, ok := d["launchSpeed"].(float64); ok {
-		if speed < 0 {
-			speed = speed * -1
-		}
-		msg.LaunchSpeed = speed
-
-	} else {
-		errMsg += "Unable to parse launchSpeed. "
-	}
-
-	if errMsg != "" {
-		err := fmt.Errorf("caught errors while parsing data: %s", errMsg)
-		return msg, err
-	}
-
-	return msg, nil
+type MessageService struct {
+	RocketRepository *entities.RocketRepository
+	Mux              *sync.Mutex
+	Wg               *sync.WaitGroup
 }
 
 func (m *MessageService) HandleSpeedIncreaseMessage(data interface{}) (DTO.RocketSpeedIncreased, error) {
@@ -134,20 +108,18 @@ func (m *MessageService) HandleRocketExplodedMessage(data interface{}) (DTO.Rock
 	return msg, nil
 }
 
-func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) (entities.Rocket, error) {
-	var rocket entities.Rocket
-
+func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) error {
 	switch metadata.MessageType {
 	case enum.RocketLaunched:
-		msg, err := m.HandleLaunchMessage(data)
+		msg, err := m.handleLaunchMessage(data)
 		if err != nil {
-			return entities.Rocket{}, err
+			return err
 		}
 
 		newRocket := entities.Rocket{
-			ID:      metadata.Channel,
-			Type:    msg.Type,
-			Mission: msg.Mission,
+			ID:         metadata.Channel,
+			RocketType: msg.Type,
+			Mission:    msg.Mission,
 			Speed: entities.RocketSpeed{
 				Current: msg.LaunchSpeed,
 				Max:     msg.LaunchSpeed,
@@ -157,119 +129,63 @@ func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) 
 				Active: true,
 				Reason: "",
 			},
+			EventCursor: 1,
 		}
 
-		ch := make(chan *entities.Rocket)
-		errCh := make(chan error)
-		go m.Rockets.Create(newRocket, ch, errCh)
+		if newRocket.ID != "" {
+			m.Wg.Add(1)
+			m.RocketRepository.Create(&newRocket, m.Mux, m.Wg)
+			m.Wg.Wait()
+			return nil
+		}
+		return fmt.Errorf("unable to create rocket, missing ID")
 
-		rocket = newRocket
-
-	case enum.RocketSpeedIncreased:
-		msg, err := m.HandleSpeedIncreaseMessage(data)
+	default:
+		m.Wg.Add(1)
+		err := m.RocketRepository.AddEvent(&metadata, data, m.Mux, m.Wg)
+		m.Wg.Wait()
 		if err != nil {
-			return entities.Rocket{}, err
+			return err
 		}
-		ch := make(chan *entities.Rocket)
-		errCh := make(chan error)
-		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
-
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
-		rocket.Speed.Update(msg.By)
-
-		ch = make(chan *entities.Rocket)
-		errCh = make(chan error)
-		go m.Rockets.Update(rocket, ch, errCh)
-
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
-
-	case enum.RocketSpeedDecreased:
-		msg, err := m.HandleSpeedDecreaseMessage(data)
-		if err != nil {
-			return entities.Rocket{}, err
-		}
-
-		ch := make(chan *entities.Rocket)
-		errCh := make(chan error)
-
-		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
-
-		ch = make(chan *entities.Rocket)
-		errCh = make(chan error)
-
-		rocket.Speed.Update(msg.By * -1)
-		go m.Rockets.Update(rocket, ch, errCh)
-
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
-
-	case enum.RocketMissionChanged:
-		msg, err := m.HandleMissionChangedMessage(data)
-		if err != nil {
-			return entities.Rocket{}, err
-		}
-
-		ch := make(chan *entities.Rocket)
-		errCh := make(chan error)
-
-		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
-
-		rocket.Mission = msg.NewMission
-
-		ch = make(chan *entities.Rocket)
-		errCh = make(chan error)
-
-		go m.Rockets.Update(rocket, ch, errCh)
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
-
-	case enum.RocketExploded:
-		msg, err := m.HandleRocketExplodedMessage(data)
-		if err != nil {
-			return entities.Rocket{}, err
-		}
-
-		ch := make(chan *entities.Rocket)
-		errCh := make(chan error)
-
-		go m.Rockets.GetByID(metadata.Channel, ch, errCh)
-
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
-
-		rocket.Status = entities.RocketStatus{
-			Active: false,
-			Reason: msg.Reason,
-		}
-
-		ch = make(chan *entities.Rocket)
-		errCh = make(chan error)
-
-		go m.Rockets.Update(rocket, ch, errCh)
-
-		if <-errCh != nil {
-			return entities.Rocket{}, err
-		}
+		return nil
 	}
-
-	return rocket, nil
 }
 
-func NewMessageService() interfaces.MessageService {
-	return &MessageService{
-		Rockets: entities.NewRocketRepository(),
+func (m *MessageService) handleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
+	d := data.(map[string]interface{})
+
+	msg := DTO.RocketLaunched{}
+	errMsg := ""
+
+	if rocketType, ok := d["type"].(string); ok {
+		msg.Type = rocketType
+	} else {
+		errMsg += "Unable to parse type. "
 	}
+
+	if mission, ok := d["mission"].(string); ok {
+		msg.Mission = mission
+	} else {
+		errMsg += "Unable to parse mission. "
+	}
+
+	if speed, ok := d["launchSpeed"].(float64); ok {
+		if speed < 0 {
+			speed = speed * -1
+		}
+		msg.LaunchSpeed = speed
+
+	} else {
+		errMsg += "Unable to parse launchSpeed. "
+	}
+
+	if errMsg != "" {
+		err := fmt.Errorf("caught errors while parsing data: %s", errMsg)
+		return msg, err
+	}
+
+	return msg, nil
+}
+func NewMessageService() MessageService {
+	return MessageService{}
 }

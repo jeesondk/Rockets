@@ -2,7 +2,6 @@ package tests
 
 import (
 	"RocketService/controllers"
-	"RocketService/entities"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -12,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestCanHandleJsonRequest(t *testing.T) {
+func Test_MessageController_CanHandleJsonRequest(t *testing.T) {
 	request := `{
 					"metadata": {
 						"channel": "193270a9-c9cf-404a-8f83-838e71d9ae67",
@@ -28,7 +27,7 @@ func TestCanHandleJsonRequest(t *testing.T) {
 				}`
 
 	messageServiceMock := messageServiceMock{}
-	messageServiceMock.On("HandleMessage", mock.Anything, mock.Anything).Return(entities.Rocket{}, nil)
+	messageServiceMock.On("HandleMessage", mock.Anything, mock.Anything).Return(nil)
 
 	c := controllers.Controller{MessageService: &messageServiceMock}
 	w := httptest.NewRecorder()
@@ -40,7 +39,7 @@ func TestCanHandleJsonRequest(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
-func TestCanHandleInvalidRequest(t *testing.T) {
+func Test_MessageController_CanHandleJsonRequest_WithError(t *testing.T) {
 	request := `{
 						"mojo": {
 							"what": "193270a9-c9cf-404a-8f83-838e71d9ae67",

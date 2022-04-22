@@ -2,7 +2,6 @@ package tests
 
 import (
 	DTO "RocketService/dto"
-	"RocketService/entities"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -10,9 +9,9 @@ type messageServiceMock struct {
 	mock.Mock
 }
 
-func (m *messageServiceMock) HandleMessage(metadata DTO.MetaData, message interface{}) (entities.Rocket, error) {
+func (m *messageServiceMock) HandleMessage(metadata DTO.MetaData, message interface{}) error {
 	args := m.Called(metadata, message)
-	return args.Get(0).(entities.Rocket), args.Error(1)
+	return args.Error(0)
 }
 
 func (m *messageServiceMock) HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {

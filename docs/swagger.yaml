@@ -1,3 +1,33 @@
+definitions:
+  entities.Rocket:
+    properties:
+      id:
+        type: string
+      launchDate:
+        type: string
+      mission:
+        type: string
+      speed:
+        $ref: '#/definitions/entities.RocketSpeed'
+      status:
+        $ref: '#/definitions/entities.RocketStatus'
+      type:
+        type: string
+    type: object
+  entities.RocketSpeed:
+    properties:
+      current:
+        type: number
+      max:
+        type: number
+    type: object
+  entities.RocketStatus:
+    properties:
+      active:
+        type: boolean
+      reason:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -18,4 +48,40 @@ paths:
       summary: Receive Rocket status messages
       tags:
       - MessageService
+  /rocket/{id}:
+    get:
+      description: returns instance of rocket
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Rocket'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Return a rocket by id
+      tags:
+      - RocketService
+  /rockets:
+    get:
+      description: returns array of rockets
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.Rocket'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Returns all rockets
+      tags:
+      - RocketService
 swagger: "2.0"
