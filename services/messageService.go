@@ -111,7 +111,7 @@ func (m *MessageService) HandleRocketExplodedMessage(data interface{}) (DTO.Rock
 func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) error {
 	switch metadata.MessageType {
 	case enum.RocketLaunched:
-		msg, err := m.handleLaunchMessage(data)
+		msg, err := m.HandleLaunchMessage(data)
 		if err != nil {
 			return err
 		}
@@ -151,7 +151,7 @@ func (m *MessageService) HandleMessage(metadata DTO.MetaData, data interface{}) 
 	}
 }
 
-func (m *MessageService) handleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
+func (m *MessageService) HandleLaunchMessage(data interface{}) (DTO.RocketLaunched, error) {
 	d := data.(map[string]interface{})
 
 	msg := DTO.RocketLaunched{}
