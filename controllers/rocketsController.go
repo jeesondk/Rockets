@@ -27,13 +27,13 @@ func (c *Controller) GetAllRockets(ctx *gin.Context) {
 // @Summary      Return a rocket by id
 // @Description  returns instance of rocket
 // @Tags         RocketService
-// @Accept  	 string
+// @Param   	 id     query    string     true        "id"
 // @Produce      json
 // @Success      200  {object}  entities.Rocket
 // @Failure      500  {object}  string
-// @Router       /rocket:{id} [get]
+// @Router       /rocket [get]
 func (c *Controller) GetRocket(ctx *gin.Context) {
-	id := ctx.Param("id")
+	id := ctx.Query("id")
 	res, err := c.RocketService.GetRocket(id)
 
 	if err != nil {

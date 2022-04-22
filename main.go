@@ -75,7 +75,7 @@ func main() {
 
 	r.POST("/messages", c.ReceiveMessage)
 	r.GET("/rockets", c.GetAllRockets)
-	r.GET("/rocket/:id", c.GetRocket)
+	r.GET("/rocket/", c.GetRocket)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	srv := &http.Server{

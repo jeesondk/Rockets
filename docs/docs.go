@@ -42,7 +42,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/rocket/{id}": {
+        "/rocket": {
             "get": {
                 "description": "returns instance of rocket",
                 "produces": [
@@ -52,6 +52,15 @@ const docTemplate = `{
                     "RocketService"
                 ],
                 "summary": "Return a rocket by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -102,6 +111,9 @@ const docTemplate = `{
         "entities.Rocket": {
             "type": "object",
             "properties": {
+                "eventCursor": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -111,14 +123,14 @@ const docTemplate = `{
                 "mission": {
                     "type": "string"
                 },
+                "rocketType": {
+                    "type": "string"
+                },
                 "speed": {
                     "$ref": "#/definitions/entities.RocketSpeed"
                 },
                 "status": {
                     "$ref": "#/definitions/entities.RocketStatus"
-                },
-                "type": {
-                    "type": "string"
                 }
             }
         },

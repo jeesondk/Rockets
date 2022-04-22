@@ -30,7 +30,7 @@
                 }
             }
         },
-        "/rocket/{id}": {
+        "/rocket": {
             "get": {
                 "description": "returns instance of rocket",
                 "produces": [
@@ -40,6 +40,15 @@
                     "RocketService"
                 ],
                 "summary": "Return a rocket by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -90,6 +99,9 @@
         "entities.Rocket": {
             "type": "object",
             "properties": {
+                "eventCursor": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -99,14 +111,14 @@
                 "mission": {
                     "type": "string"
                 },
+                "rocketType": {
+                    "type": "string"
+                },
                 "speed": {
                     "$ref": "#/definitions/entities.RocketSpeed"
                 },
                 "status": {
                     "$ref": "#/definitions/entities.RocketStatus"
-                },
-                "type": {
-                    "type": "string"
                 }
             }
         },

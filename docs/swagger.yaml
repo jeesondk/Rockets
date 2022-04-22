@@ -1,18 +1,20 @@
 definitions:
   entities.Rocket:
     properties:
+      eventCursor:
+        type: integer
       id:
         type: string
       launchDate:
         type: string
       mission:
         type: string
+      rocketType:
+        type: string
       speed:
         $ref: '#/definitions/entities.RocketSpeed'
       status:
         $ref: '#/definitions/entities.RocketStatus'
-      type:
-        type: string
     type: object
   entities.RocketSpeed:
     properties:
@@ -48,9 +50,15 @@ paths:
       summary: Receive Rocket status messages
       tags:
       - MessageService
-  /rocket/{id}:
+  /rocket:
     get:
       description: returns instance of rocket
+      parameters:
+      - description: id
+        in: query
+        name: id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
