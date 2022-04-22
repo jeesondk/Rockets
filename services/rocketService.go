@@ -4,7 +4,6 @@ import (
 	DTO "RocketService/dto"
 	"RocketService/entities"
 	"RocketService/enum"
-	"fmt"
 	"sync"
 )
 
@@ -54,12 +53,11 @@ func (r *RocketService) UpdateRockets() {
 	r.Wg.Add(1)
 	rockets := r.RocketRepository.GetAllRockets(r.Mux, r.Wg)
 	r.Wg.Wait()
-	errs := make([]error, 0)
 
 	for _, rocket := range *rockets {
 
 		r.Wg.Add(1)
-		events, err := r.RocketRepository.GetEvent(rocket.ID, r.Mux, r.Wg)
+		events, _ := r.RocketRepository.GetEvent(rocket.ID, r.Mux, r.Wg)
 		r.Wg.Wait()
 
 		shouldUpdate := true
@@ -72,17 +70,10 @@ func (r *RocketService) UpdateRockets() {
 			}
 			j++
 		}
-
 		if shouldUpdate && events != nil {
 			r.rollUpEvents(events, rocket.ID)
 		}
 
-		if err != nil {
-			errs = append(errs, err)
-		}
-	}
-	if len(errs) != 0 {
-		fmt.Errorf("error while updating rockets: %v", errs)
 	}
 }
 
@@ -97,8 +88,6 @@ func (r *RocketService) rollUpEvents(events []entities.RocketEvent, id string) e
 	errs := make([]error, 0)
 
 	for _, e := range events {
-		r.Wg.Add(1)
-		r.Wg.Wait()
 
 		if err != nil {
 			errs = append(errs, err)
@@ -106,7 +95,7 @@ func (r *RocketService) rollUpEvents(events []entities.RocketEvent, id string) e
 
 		switch e.EventType {
 		case enum.RocketSpeedIncreased:
-			specificEvent, errHandle := r.MessageService.HandleSpeedIncreaseMessage(e)
+			specificEvent, errHandle := r.MessageService.HandleSpeedIncreaseMessage(e.Event)
 			if errHandle != nil {
 				return errHandle
 			}
@@ -117,7 +106,7 @@ func (r *RocketService) rollUpEvents(events []entities.RocketEvent, id string) e
 			}
 
 		case enum.RocketSpeedDecreased:
-			specificEvent, errHandle := r.MessageService.HandleSpeedDecreaseMessage(e)
+			specificEvent, errHandle := r.MessageService.HandleSpeedDecreaseMessage(e.Event)
 			if errHandle != nil {
 				return errHandle
 			}
@@ -128,7 +117,7 @@ func (r *RocketService) rollUpEvents(events []entities.RocketEvent, id string) e
 			}
 
 		case enum.RocketMissionChanged:
-			specificEvent, errHandle := r.MessageService.HandleMissionChangedMessage(e)
+			specificEvent, errHandle := r.MessageService.HandleMissionChangedMessage(e.Event)
 			if errHandle != nil {
 				return errHandle
 			}
@@ -139,7 +128,7 @@ func (r *RocketService) rollUpEvents(events []entities.RocketEvent, id string) e
 			}
 
 		case enum.RocketExploded:
-			specificEvent, errHandle := r.MessageService.HandleRocketExplodedMessage(e)
+			specificEvent, errHandle := r.MessageService.HandleRocketExplodedMessage(e.Event)
 			if errHandle != nil {
 				return errHandle
 			}
